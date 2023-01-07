@@ -1,212 +1,280 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include "headerfile.h"
+#include <time.h>
 
-void get_data(match_data md_array[102])
+int top_row_1to6(int *ptr, int n, int which_side)
 {
-    FILE *file = fopen("kampe-2022-2023.txt", "r");
-    char line[100];
-    int i = 0;
+    int i, counter = 0;
 
-    for (i = 0; i < 102; i++)
+    for (i = 0; i < n; i++)
     {
-        fgets(line, 100, file);
-
-        sscanf(line, "%s %s %s %s - %s %d - %d %d", md_array[i].week_day, md_array[i].date, md_array[i].time_of_day, md_array[i].home_team, md_array[i].away_team, &md_array[i].home_team_goals, &md_array[i].away_team_goals, &md_array[i].audience);
+        if (*(ptr + i) == which_side)
+        {
+            counter = counter + 1;
+        }
     }
 
-    fclose(file);
+    return counter * which_side;
 }
 
-void arrange_teams(team_data teams[12])
+int pair_1(int *ptr, int n)
 {
-    strcpy(teams[0].team_name, "FCM");
-    strcpy(teams[1].team_name, "RFC");
-    strcpy(teams[2].team_name, "VFF");
-    strcpy(teams[3].team_name, "AaB");
-    strcpy(teams[4].team_name, "LBK");
-    strcpy(teams[5].team_name, "SIF");
-    strcpy(teams[6].team_name, "FCK");
-    strcpy(teams[7].team_name, "ACH");
-    strcpy(teams[8].team_name, "BIF");
-    strcpy(teams[9].team_name, "AGF");
-    strcpy(teams[10].team_name, "OB");
-    strcpy(teams[11].team_name, "FCN");
+    int i, d, the_two = 0;
+
+    for (i = 0; i < n; i++)
+    {
+        for (d = 0; d < n; d++)
+        {
+
+            if (*(ptr + i) == *(ptr + d) && *(ptr + i) + *(ptr + d) > the_two && i != d)
+            {
+                the_two = *(ptr + i) + *(ptr + d);
+            }
+        }
+    }
+
+    return the_two;
 }
 
-int name_to_index(char team_name[MAX_LENGHT])
+int pair_2(int *ptr, int n)
 {
+    int i, d, counter = 0, pairs[2] = {0, 0};
+    
+    //finding first pair
+    for (i = 0; i < n; i++)
+    {
+        for (d = 0; d < n; d++)
+        {
 
-    if (strcmp(team_name, "FCM") == 0)
+            if (*(ptr + i) == *(ptr + d) && *(ptr + i) + *(ptr + d) > pairs[0] && i != d)
+            {
+                pairs[0] = *(ptr + i) + *(ptr + d);
+            }
+        }
+    }
+
+    // eliminating first pair from the roll
+    for (i = 0; i < n; i++)
+    {
+        if (*(ptr + i) == pairs[0] / 2)
+        {
+            *(ptr + i) = 0;
+            counter = counter + 1;
+        }
+
+        if (counter == 2)
+        {
+            break;
+        }
+    }
+
+    // finding second pair
+    for (i = 0; i < n; i++)
+    {
+        for (d = 0; d < n; d++)
+        {
+
+            if (*(ptr + i) == *(ptr + d) && *(ptr + i) + *(ptr + d) > pairs[1] && i != d)
+            {
+                pairs[1] = *(ptr + i) + *(ptr + d);
+            }
+        }
+    }
+
+    if (pairs[0] == 0 || pairs[1] == 0)
     {
         return 0;
     }
-    else if (strcmp(team_name, "RFC") == 0)
+    else
     {
-        return 1;
-    }
-    else if (strcmp(team_name, "VFF") == 0)
-    {
-        return 2;
-    }
-    else if (strcmp(team_name, "AaB") == 0)
-    {
-        return 3;
-    }
-    else if (strcmp(team_name, "LBK") == 0)
-    {
-        return 4;
-    }
-    else if (strcmp(team_name, "SIF") == 0)
-    {
-        return 5;
-    }
-    else if (strcmp(team_name, "FCK") == 0)
-    {
-        return 6;
-    }
-    else if (strcmp(team_name, "ACH") == 0)
-    {
-        return 7;
-    }
-    else if (strcmp(team_name, "BIF") == 0)
-    {
-        return 8;
-    }
-    else if (strcmp(team_name, "AGF") == 0)
-    {
-        return 9;
-    }
-    else if (strcmp(team_name, "OB") == 0)
-    {
-        return 10;
-    }
-    else if (strcmp(team_name, "FCN") == 0)
-    {
-        return 11;
+        return pairs[0] + pairs[1];
     }
 }
 
-void play_matches(match_data md_array[102], team_data teams[12])
+int alike_3_4(int *ptr, int n, int number)
 {
-    int i;
+    int i, k, result = 0, counter = 0, dice[6] = {1, 2, 3, 4, 5, 6};
 
-    for (i = 0; i < 102; i++)
+    for (i = 0; i < 6; i++)
     {
-        if (md_array[i].home_team_goals == md_array[i].away_team_goals)
+        for (k = 0; k < n; k++)
         {
-            teams[name_to_index(md_array[i].home_team)].goals_by_team += md_array[i].home_team_goals;
-            teams[name_to_index(md_array[i].away_team)].goals_by_team += md_array[i].away_team_goals;
-
-            teams[name_to_index(md_array[i].home_team)].goals_against_team += md_array[i].away_team_goals;
-            teams[name_to_index(md_array[i].away_team)].goals_against_team += md_array[i].home_team_goals;
-
-            teams[name_to_index(md_array[i].home_team)].points += 1;
-            teams[name_to_index(md_array[i].away_team)].points += 1;
+            if (*(ptr + k) == dice[i])
+            {
+                counter = counter + 1;
+            }
         }
 
-        else if (md_array[i].home_team_goals > md_array[i].away_team_goals)
+        if (counter >= number && (dice[i] * number) > result)
         {
-            teams[name_to_index(md_array[i].home_team)].goals_by_team += md_array[i].home_team_goals;
-            teams[name_to_index(md_array[i].away_team)].goals_by_team += md_array[i].away_team_goals;
-
-            teams[name_to_index(md_array[i].home_team)].goals_against_team += md_array[i].away_team_goals;
-            teams[name_to_index(md_array[i].away_team)].goals_against_team += md_array[i].home_team_goals;
-
-            teams[name_to_index(md_array[i].home_team)].points += 3;
+            result = dice[i] * number;
         }
 
-        else if (md_array[i].home_team_goals < md_array[i].away_team_goals)
+        counter = 0;
+    }
+
+    return result;
+}
+
+int small_straight(int *ptr, int n)
+{
+    int i, k, small_straight = 0, dice[6] = {1, 2, 3, 4, 5, 6};
+
+    for (i = 0; i < 5; i++)
+    {
+        for (k = 0; k < n; k++)
         {
-            teams[name_to_index(md_array[i].home_team)].goals_by_team += md_array[i].home_team_goals;
-            teams[name_to_index(md_array[i].away_team)].goals_by_team += md_array[i].away_team_goals;
+            if (*(ptr + k) == dice[i])
+            {
+                small_straight = small_straight + dice[i];
 
-            teams[name_to_index(md_array[i].home_team)].goals_against_team += md_array[i].away_team_goals;
-            teams[name_to_index(md_array[i].away_team)].goals_against_team += md_array[i].home_team_goals;
-
-            teams[name_to_index(md_array[i].away_team)].points += 3;
+                break;
+            }
         }
+    }
+
+    if (small_straight == 15)
+    {
+        return 15;
+    }
+    else
+    {
+        return 0;
     }
 }
 
-void sort_teams(team_data teams[12])
+int big_straight(int *ptr, int n)
 {
-    qsort(teams, 12, sizeof(team_data), &compare);
-}
+    int i, k, big_straight = 0, dice[6] = {1, 2, 3, 4, 5, 6};
 
-int compare(const void *a, const void *b)
-{
-    team_data *ptr1 = (team_data *)a;
-    team_data *ptr2 = (team_data *)b;
-
-    if (ptr1->points > ptr2->points)
+    for (i = 1; i < 6; i++)
     {
-        return -1;
+        for (k = 0; k < n; k++)
+        {
+            if (*(ptr + k) == dice[i])
+            {
+                big_straight = big_straight + dice[i];
+                break;
+            }
+        }
     }
 
-    else if (ptr1->points < ptr2->points)
-
+    if (big_straight == 20)
     {
-        return 1;
+        return 20;
     }
-
-    else if (ptr1->points == ptr2->points)
+    else
     {
-        int goal_diff1 = ptr1->goals_by_team - ptr1->goals_against_team;
-        int goal_diff2 = ptr2->goals_by_team - ptr2->goals_against_team;
-
-        if (goal_diff1 > goal_diff2)
-        {
-            return -1;
-        }
-
-        else if (goal_diff1 < goal_diff2)
-        {
-            return 1;
-        }
-
-        else if (goal_diff1 == goal_diff2)
-
-        {
-            return 0;
-        }
+        return 0;
     }
 }
 
-void print_result(team_data teams[12])
+int fullhouse(int *ptr, int n)
 {
-    int i;
+    int i, k, j, counter = 0, the_three = 0, the_two = 0, dice[6] = {1, 2, 3, 4, 5, 6};
 
-    printf("\n -------------------------------------------------------------------\n|THE POSITION OF EACH TEAM AFTER 102 MATCHES PLAYED IN THE SUPERLIGA|\n -------------------------------------------------------------------");
-
-    for (i = 0; i < 12; i++)
+    // finding 3 biggest alike
+    for (i = 0; i < 6; i++)
     {
-
-        if (strlen(teams[i].team_name) == 2)
+        for (k = 0; k < n; k++)
         {
-            printf("\n\n|Position %d      ", i + 1);
-            printf("Team name: %s     Points: %d    Goals by team: %d    Goals against team: %d", teams[i].team_name, teams[i].points, teams[i].goals_by_team, teams[i].goals_against_team);
+            if (*(ptr + k) == dice[i])
+            {
+                counter = counter + 1;
+            }
         }
 
-        else if (teams[i].points < 10)
+        if (counter >= 3 && (dice[i] * 3) > the_three)
         {
-            printf("\n\n|Position %d    ", i + 1);
-            printf(" Team name: %s    Points: %d     Goals by team: %d    Goals against team: %d", teams[i].team_name, teams[i].points, teams[i].goals_by_team, teams[i].goals_against_team);
+            the_three = dice[i] * 3;
         }
 
-        else if (i + 1 > 9)
-        {
-            printf("\n\n|Position %d     ", i + 1);
-            printf("Team name: %s    Points: %d    Goals by team: %d    Goals against team: %d", teams[i].team_name, teams[i].points, teams[i].goals_by_team, teams[i].goals_against_team);
-        }
+        counter = 0;
+    }
 
-        else
+    // eliminating found three numbers
+    for (i = 0; i < n; i++)
+    {
+        if (*(ptr + i) == the_three / 3)
         {
-            printf("\n\n|Position %d      ", i + 1);
-            printf("Team name: %s    Points: %d    Goals by team: %d    Goals against team: %d", teams[i].team_name, teams[i].points, teams[i].goals_by_team, teams[i].goals_against_team);
+            *(ptr + i) = 0;
         }
     }
 
-    printf("\n");
+    // finding 2 biggest alike
+    for (i = 0; i < n; i++)
+    {
+        for (j = 0; j < n; j++)
+        {
+            if ((*(ptr + i) == *(ptr + j)) && (*(ptr + i) + *(ptr + j)) > the_two && i != j)
+            {
+                the_two = *(ptr + i) + *(ptr + j);
+            }
+        }
+    }
+
+    if (the_three == 0 || the_two == 0)
+    {
+        return 0;
+    }
+
+    else
+
+    {
+        return the_three + the_two;
+    }
+}
+
+int chance(int *ptr, int n)
+{
+    int i, k, counter = 0, chance = 0, dice[6] = {6, 5, 4, 3, 2, 1};
+
+    for (i = 0; i < 6; i++)
+    {
+        for (k = 0; k < n; k++)
+        {
+            if (dice[i] == *(ptr + k))
+            {
+                counter = counter + 1;
+                chance = chance + dice[i];
+
+                if (counter == 5)
+                {
+                    break;
+                }
+            }
+        }
+
+        if (counter == 5)
+        {
+            break;
+        }
+    }
+
+    return chance;
+}
+
+int yatzy(int *ptr, int n)
+{
+    int i, k, counter = 0, yatzy = 0, dice[6] = {1, 2, 3, 4, 5, 6};
+
+    for (i = 0; i < 6; i++)
+    {
+        for (k = 0; k < 15; k++)
+        {
+            if (*(ptr + k) == dice[i])
+            {
+                counter = counter + 1;
+            }
+        }
+
+        if (counter >= 5 && (dice[i] * 5) > yatzy)
+        {
+            yatzy = dice[i] * 5;
+        }
+
+        counter = 0;
+    }
+
+    return yatzy;
 }
